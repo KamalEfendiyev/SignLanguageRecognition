@@ -1,0 +1,96 @@
+import numpy as np
+import os
+import cv2
+from keras import layers
+from keras.layers import Input, Dense, Add,Activation, AveragePooling2D, BatchNormalization, Flatten, Conv2D, MaxPooling2D, Dropout, ZeroPadding2D
+from keras.models import Model, load_model
+from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import VGG16
+#from keras.utils import to_categorical
+from keras.initializers import glorot_uniform
+from keras import regularizers
+import scipy.misc
+from matplotlib.pyplot import imshow
+from matplotlib import pyplot as plt
+from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
+%matplotlib inline
+
+data_dir ='/content/drive/My Drive/neuron/Gesture Image Data/val'
+
+def load_dataset(directory):
+  images = []
+  labels = []
+  i=1
+  for idx,label in enumerate(uniq_labels):
+    for file in os.listdir(directory +"/"+ str(label)):
+      file = plt.imread(directory + "/" +str(label) +"/" + file)
+      file = cv2.resize(file, (50,50))
+      file = file.astype('float32') / 255
+      images.append(file)
+      labels.append(idx)
+      print(i)
+      i=i+1
+  images = np.array(images)
+  labels = np.array(labels)
+  return images, labels
+  
+uniq_labels = sorted(os.listdir(data_dir))
+X_pre, Y_pre = load_dataset(data_dir)
+
+print(X_pre.shape, Y_pre.shape)
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X_pre, Y_pre, test_size = 0.15)
+X_test, X_eval, Y_test, Y_eval = train_test_split(X_test, Y_test, test_size = 0.099)
+print("Train images shape",X_train.shape, Y_train.shape)
+print("Test images shape",X_test.shape, Y_test.shape)
+print("Evaluate image shape",X_eval.shape, Y_eval.shape)
+print("Printing the labels",uniq_labels, len(uniq_labels))
+
+import tensorflow as tf
+Y_train = tf.keras.utils.to_categorical(Y_train)
+Y_t = tf.keras.utils.to_categorical(Y_test)
+Y_eval = tf.keras.utils.to_categorical(Y_eval)
+
+import keras
+from keras.applications.vgg19 import VGG19
+
+def build_model():
+    base = VGG19(include_top = False, weights = "imagenet", input_shape = (50,50,3))
+    X = base.output
+    X = keras.layers.Flatten()(X)
+    X = keras.layers.Dense(512, activation = 'relu')(X)
+    X = keras.layers.Dropout(0.4)(X)
+    X = keras.layers.BatchNormalization()(X)
+    X = keras.layers.Dense(512, activation = 'relu')(X)
+    X = keras.layers.Dropout(0.3)(X)
+    X = keras.layers.BatchNormalization()(X)
+    preds = keras.layers.Dense(37, activation = 'softmax')(X)
+    
+    model = keras.models.Model(inputs = base.input, outputs = preds)
+    model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    
+    return model
+
+
+model = build_model()
+model.summary()
+
+history = model.fit(X_train, Y_train,
+                    epochs = 25,
+                    batch_size = 90,
+                    validation_data = (X_eval, Y_eval))
+                    
+eval_loss, eval_acc = model.evaluate(X_test, Y_t)
+print('Evaluation Loss: {:.4f}, Evaluation Accuracy: {:.2f}'.format(eval_loss, eval_acc * 100)) 
+
+from sklearn.metrics import multilabel_confusion_matrix
+import sklearn.metrics
+import numpy
+import sklearn.metrics as skm
+predIdxs = model.predict(X_test)
+print(predIdxs.shape)
+print(Y_t.shape)
+from sklearn.metrics import classification_report, confusion_matrix
+print(classification_report(np.round(predIdxs), Y_t, target_names=list(uniq_labels)))
