@@ -66,9 +66,6 @@ Accuracy
 Classification Report
 Confusion Matrix: Detailed metrics such as precision, recall, and F1-score for each class.
 Example Training Output
-yaml
-Копировать
-Редактировать
 Train images shape: (11800, 50, 50, 3)
 Test images shape: (1400, 50, 50, 3)
 Evaluate image shape: (156, 50, 50, 3)
@@ -80,9 +77,6 @@ Epoch 25/25
 
 Evaluation Loss: 0.2345, Evaluation Accuracy: 95.67%
 Example Classification Report
-markdown
-Копировать
-Редактировать
               precision    recall  f1-score   support
       class1       0.93      0.92      0.93        50
       ...
