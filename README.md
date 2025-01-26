@@ -15,9 +15,6 @@ This project implements a gesture image classification model using transfer lear
 The dataset directory structure should be as follows:
 /Gesture Image Data/ ├── val/ ├── class1/ ├── class2/ ├── ...
 
-markdown
-Копировать
-Редактировать
 
 ## Prerequisites
 
@@ -47,9 +44,6 @@ Ensure the gesture image dataset is available and follows the specified director
 Run the Script:
 Execute the script using:
 
-bash
-Копировать
-Редактировать
 python gesture_classification.py
 Model Training:
 The model will train for 25 epochs by default. You can adjust the number of epochs and batch size in the model.fit section.
